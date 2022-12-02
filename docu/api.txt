@@ -1,0 +1,21 @@
+/tracks
+-get
+
+/track/id
+-get
+-post (body with track params)
+-put (body with track params)
+-delete
+
+/trackQuery
+-get (body with query params)
+
+/projects
+-get
+
+/project/id
+-get
+-post (body with track params)
+-put (body with track params)
+-delete
+
