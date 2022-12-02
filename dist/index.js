@@ -1,9 +1,11 @@
 import { PrismaClient } from "@prisma/client";
 import express from 'express';
+import cors from 'cors';
 const app = express();
 const port = 3100;
 const prisma = new PrismaClient();
 app.disable('x-powered-by');
+app.use(cors());
 app.use(express.json());
 app.get('/tracks', (req, res) => {
     prisma.track.findMany()
@@ -157,7 +159,6 @@ app.get('/projects', (req, res) => {
     prisma.project.findMany()
         .then((data) => {
         res.setHeader('content-Type', 'application/json');
-        res.setHeader('Access-Control-Allow-Origin', '*');
         res.status(200).json(data);
     })
         .catch((err) => {
@@ -167,11 +168,11 @@ app.get('/projects', (req, res) => {
         }
     });
 });
-app.get('/project', (req, res) => {
-    let request_data = req.body;
+app.get('/project/:id', (req, res) => {
+    let request_data = parseInt(req.params.id);
     prisma.project.findFirst({
         where: {
-            id: request_data.id
+            id: request_data
         }
     })
         .then((data) => {
