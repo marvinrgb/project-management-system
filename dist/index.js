@@ -156,6 +156,8 @@ app.get('/trackFullText', async (req, res) => {
 app.get('/projects', (req, res) => {
     prisma.project.findMany()
         .then((data) => {
+        res.setHeader('content-Type', 'application/json');
+        res.setHeader('Access-Control-Allow-Origin', '*');
         res.status(200).json(data);
     })
         .catch((err) => {
