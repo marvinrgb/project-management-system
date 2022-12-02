@@ -3,12 +3,18 @@
 
 /track/id
 -get
+
+/track
 -post (body with track params)
 -put (body with track params)
 -delete
 
 /trackQuery
 -get (body with query params)
+
+/trackFullText
+-get (body with one query string)
+
 
 /projects
 -get

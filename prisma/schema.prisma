@@ -13,9 +13,9 @@ datasource db {
 model Project {
   id Int @id @default(autoincrement())
   name String
-  genres String
-  description String
-  length Int //in Seconds (calculates from all Tracks)
+  genres String @default("default")
+  description String @default("default")
+  length Int @default(0) //in Seconds (calculates from all Tracks)
   createdAt DateTime @default(now())
   track Track[]
 }
