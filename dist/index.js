@@ -114,6 +114,23 @@ function returnNumIfNum(text) {
         return parseInt(text);
     }
 }
+app.get('/tracksByProject/:id', (req, res) => {
+    let id = parseInt(req.params.id);
+    prisma.track.findMany({
+        where: {
+            projectId: id
+        }
+    })
+        .then((data) => {
+        res.status(200).send(JSON.stringify(data));
+    })
+        .catch((err) => {
+        if (err) {
+            res.sendStatus(500);
+            console.log(new Error(err).message);
+        }
+    });
+});
 app.get('/trackFullText', async (req, res) => {
     let request_data = req.body;
     prisma.track.findMany({
