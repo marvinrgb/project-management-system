@@ -223,10 +223,12 @@ app.get('/project/:id', (req, res) => {
 
 app.post('/project', (req, res) => {
   let request_data = req.body;
+  console.log(request_data);
   prisma.project.create({
     data: request_data
   })
   .then((data) => {
+    res.setHeader('content-Type', 'application/json')
     res.status(200).json(data);    
   })
   .catch((err) => {
