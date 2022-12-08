@@ -211,7 +211,11 @@ app.get('/project/:id', (req, res) => {
     }
   })
   .then((data) => {
-    res.status(200).json(data);    
+    if (data) {
+      res.status(200).json(data);
+    } else {
+      res.sendStatus(500);
+    }
   })
   .catch((err) => {
     if (err) {

@@ -131,8 +131,8 @@ app.get('/tracksByProject/:id', (req, res) => {
         }
     });
 });
-app.get('/trackFullText', async (req, res) => {
-    let request_data = req.body;
+app.get('/trackFullText/:query', async (req, res) => {
+    let request_data = req.params;
     prisma.track.findMany({
         where: {
             OR: [
@@ -193,7 +193,12 @@ app.get('/project/:id', (req, res) => {
         }
     })
         .then((data) => {
-        res.status(200).json(data);
+        if (data) {
+            res.status(200).json(data);
+        }
+        else {
+            res.sendStatus(500);
+        }
     })
         .catch((err) => {
         if (err) {
