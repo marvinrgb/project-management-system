@@ -280,6 +280,47 @@ app.delete('/project', (req, res) => {
   })
 })
 
+app.get('/projectFullText/:query', async (req, res) => {
+  let request_data = req.params;
+  prisma.track.findMany({
+    where: {
+      OR: [
+        {
+          id: returnNumIfNum(request_data.query)
+        },
+        {
+          name: {
+            contains: request_data.query
+          }
+        },
+        {
+          description: {
+            contains: request_data.query
+          }
+        },
+        {
+          genres: {
+            contains: request_data.query
+          }
+        },
+        {
+          length: {
+            contains: request_data.query
+          }
+        }
+      ]
+    }
+  })
+  .then((data) => {
+    res.status(200).json(data);    
+  })
+  .catch((err) => {
+    if (err) {
+      res.sendStatus(500);
+      console.log(new Error(err).message)
+    }
+  })
+})
 
 
 app.listen(port, () => {
