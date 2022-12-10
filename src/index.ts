@@ -282,7 +282,7 @@ app.delete('/project', (req, res) => {
 
 app.get('/projectFullText/:query', async (req, res) => {
   let request_data = req.params;
-  prisma.track.findMany({
+  prisma.project.findMany({
     where: {
       OR: [
         {
@@ -300,11 +300,6 @@ app.get('/projectFullText/:query', async (req, res) => {
         },
         {
           genres: {
-            contains: request_data.query
-          }
-        },
-        {
-          length: {
             contains: request_data.query
           }
         }
