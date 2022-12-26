@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 const app = express();
 const port = 3100;
+const host = '0.0.0.0';
 const prisma = new PrismaClient();
 app.disable('x-powered-by');
 app.use(cors());
@@ -295,6 +296,6 @@ app.get('/projectFullText/:query', async (req, res) => {
         }
     });
 });
-app.listen(port, () => {
+app.listen(port, host, () => {
     console.log("running");
 });
