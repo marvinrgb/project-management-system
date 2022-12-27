@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import express from 'express';
 import cors from 'cors';
-
+import * as sqlite from './sqliteHandler.js';
 
 const app = express();
 const port = 3100;
@@ -13,92 +13,68 @@ app.disable('x-powered-by')
 app.use(cors())
 app.use(express.json())
 
-app.get('/tracks', (req, res) => {
-  prisma.track.findMany()
-  .then((data) => {
+app.get('/tracks', async  (req, res) => {
+  let data;
+  try {
+    data = await sqlite.getAllFromTable('track')
+    res.setHeader('content-Type', 'application/json')
     res.status(200).json(data)
-  })
-  .catch((err) => {
-    if (err) {
-      res.sendStatus(500);
-      console.log(new Error(err).message)
-    }
-  })
+  } catch (error:any) {
+    error.time = Date.now()
+    console.log(error)
+  }
 })
 
-app.get('/track/:id', (req, res) => {
-  let id = parseInt(req.params.id);
-  prisma.track.findFirst({
-    where: {
-      id: id
-    }
-  })
-  .then((data) => {
-    res.status(200).json(data);
-  })
-  .catch((err) => {
-    if (err) {
-      res.sendStatus(500);
-      console.log(new Error(err).message)
-    }
-  })
+app.get('/track/:id', async (req, res) => {
+  let data;
+  try {
+    data = await sqlite.getOneWithID('track', parseInt(req.params.id))
+    res.setHeader('content-Type', 'application/json')
+    res.status(200).json(data)
+  } catch (error:any) {
+    error.time = Date.now()
+    console.log(error)
+  }
 })
 
-app.post('/track', (req, res) => {
+app.post('/track', async (req, res) => {
   let request_data = req.body;
   request_data.projectId = 1;
 
-  prisma.track.create({
-    data: request_data
-  })
-  .then((data) => {
-    res.status(200).json(data);    
-  })
-  .catch((err) => {
-    if (err) {
-      res.sendStatus(500);
-      console.log(new Error(err).message)
-    }
-  })
+  try {
+    let data = await sqlite.createTrack(request_data);
+    res.setHeader('content-Type', 'application/json')
+    res.status(200).json(data)
+  } catch (error:any) {
+    error.time = Date.now()
+    console.log(error)
+  }
 })
 
-app.put('/track', (req, res) => {
+app.put('/track', async (req, res) => {
   let request_data = req.body;
-
-  prisma.track.update({
-    where: {
-      id: request_data.id
-    },
-    data: request_data
-  })
-  .then((data) => {
-    res.status(200).json(data);    
-  })
-  .catch((err) => {
-    if (err) {
-      res.sendStatus(500);
-      console.log(new Error(err).message)
-    }
-  })
+  
+  try {
+    let data = await sqlite.changeTrack(request_data);
+    res.setHeader('content-Type', 'application/json')
+    res.status(200).json(data)
+  } catch (error:any) {
+    error.time = Date.now()
+    console.log(error)
+  }
 })
 
-app.delete('/track', (req, res) => {
+app.delete('/track', async (req, res) => {
   let request_data = req.body;
 
-  prisma.track.delete({
-    where: {
-      id: request_data.id
-    }
-  })
-  .then((data) => {
-    res.status(200).json(data);    
-  })
-  .catch((err) => {
-    if (err) {
-      res.sendStatus(500);
-      console.log(new Error(err).message)
-    }
-  })
+  try {
+    let data = await sqlite.deleteTrack(request_data.id);
+    res.setHeader('content-Type', 'application/json')
+    res.status(200).json(data)
+  } catch (error:any) {
+    error.time = Date.now()
+    console.log(error)
+  }
 })
 
 
@@ -106,20 +82,17 @@ app.delete('/track', (req, res) => {
 TAKES: any field that exist on model track. no specific amount of fields required
 DELIVERS: all strictly matching tracks
 */
-app.get('/trackQuery', (req, res) => {
+app.get('/trackQuery', async (req, res) => {
   let request_data = req.body;
-  prisma.track.findMany({
-    where: request_data
-  })
-  .then((data) => {
-    res.status(200).json(data);    
-  })
-  .catch((err) => {
-    if (err) {
-      res.sendStatus(500);
-      console.log(new Error(err).message)
-    }
-  })
+
+  try {
+    let data = await sqlite.trackQuery(request_data);
+    res.setHeader('content-Type', 'application/json')
+    res.status(200).json(data)
+  } catch (error:any) {
+    error.time = Date.now()
+    console.log(error)
+  }
 })
 
 function returnNumIfNum(text:any) {
@@ -130,192 +103,101 @@ function returnNumIfNum(text:any) {
   }
 }
 
-app.get('/tracksByProject/:id', (req, res) => {
+app.get('/tracksByProject/:id', async (req, res) => {
   let id = parseInt(req.params.id);
-  prisma.track.findMany({
-    where: {
-      projectId: id
-    }
-  })
-  .then((data) => {
-    res.status(200).send(JSON.stringify(data));    
-  })
-  .catch((err) => {
-    if (err) {
-      res.sendStatus(500);
-      console.log(new Error(err).message)
-    }
-  })
+  try {
+    let data = await sqlite.tracksByProject(id);
+    res.setHeader('content-Type', 'application/json')
+    res.status(200).json(data)
+  } catch (error:any) {
+    error.time = Date.now()
+    console.log(error)
+  }
 })
 
 app.get('/trackFullText/:query', async (req, res) => {
   let request_data = req.params;
-  prisma.track.findMany({
-    where: {
-      OR: [
-        {
-          id: returnNumIfNum(request_data.query)
-        },
-        {
-          name: {
-            contains: request_data.query
-          }
-        },
-        {
-          description: {
-            contains: request_data.query
-          }
-        },
-        {
-          genre: {
-            contains: request_data.query
-          }
-        },
-        {
-          text: {
-            contains: request_data.query
-          }
-        }
-      ]
-    }
-  })
-  .then((data) => {
-    res.status(200).json(data);    
-  })
-  .catch((err) => {
-    if (err) {
-      res.sendStatus(500);
-      console.log(new Error(err).message)
-    }
-  })
-})
-
-app.get('/projects', (req, res) => {
-  prisma.project.findMany()
-  .then((data) => {
+  try {
+    let data = await sqlite.trackFullText(request_data.query);
     res.setHeader('content-Type', 'application/json')
-    res.status(200).json(data);    
-  })
-  .catch((err) => {
-    if (err) {
-      res.sendStatus(500);
-      console.log(new Error(err).message)
-    }
-  })
+    res.status(200).json(data)
+  } catch (error:any) {
+    error.time = Date.now()
+    console.log(error)
+  }
 })
 
-app.get('/project/:id', (req, res) => {
-  let request_data = parseInt(req.params.id);
-  prisma.project.findFirst({
-    where: {
-      id: request_data
-    }
-  })
-  .then((data) => {
-    if (data) {
-      res.status(200).json(data);
-    } else {
-      res.sendStatus(500);
-    }
-  })
-  .catch((err) => {
-    if (err) {
-      res.sendStatus(500);
-      console.log(new Error(err).message)
-    }
-  })
-})
-
-app.post('/project', (req, res) => {
-  let request_data = req.body;
-  console.log(request_data);
-  prisma.project.create({
-    data: request_data
-  })
-  .then((data) => {
+app.get('/projects', async (req, res) => {
+  let data;
+  try {
+    data = await sqlite.getAllFromTable('project')
     res.setHeader('content-Type', 'application/json')
-    res.status(200).json(data);    
-  })
-  .catch((err) => {
-    if (err) {
-      res.sendStatus(500);
-      console.log(new Error(err).message)
-    }
-  })
+    res.status(200).json(data)
+  } catch (error:any) {
+    error.time = Date.now()
+    console.log(error)
+  }
 })
 
-app.put('/project', (req, res) => {
-  let request_data = req.body;
-  prisma.project.update({
-    where: {
-      id: request_data.id
-    },
-    data: request_data
-  })
-  .then((data) => {
-    res.status(200).json(data);    
-  })
-  .catch((err) => {
-    if (err) {
-      res.sendStatus(500);
-      console.log(new Error(err).message)
-    }
-  })
+app.get('/project/:id', async (req, res) => {
+  let data;
+  try {
+    data = await sqlite.getOneWithID('project', parseInt(req.params.id))
+    res.setHeader('content-Type', 'application/json')
+    res.status(200).json(data)
+  } catch (error:any) {
+    error.time = Date.now()
+    console.log(error)
+  }
 })
 
-app.delete('/project', (req, res) => {
+app.post('/project', async (req, res) => {
   let request_data = req.body;
-  prisma.project.delete({
-    where: {
-      id: request_data.id
-    }
-  })
-  .then((data) => {
-    res.status(200).json(data);    
-  })
-  .catch((err) => {
-    if (err) {
-      res.sendStatus(500);
-      console.log(new Error(err).message)
-    }
-  })
+  
+  try {
+    let data = await sqlite.createProject(request_data);
+    res.setHeader('Content-Type', 'application/json')
+    res.status(200).json(data)
+  } catch (error:any) {
+    error.time = Date.now()
+    console.log(error)
+  }
+})
+
+app.put('/project', async (req, res) => {
+  let request_data = req.body;
+  try {
+    let data = await sqlite.changeProject(request_data);
+    res.setHeader('Content-Type', 'application/json')
+    res.status(200).json(data)
+  } catch (error:any) {
+    error.time = Date.now()
+    console.log(error)
+  }
+})
+
+app.delete('/project', async (req, res) => {
+  let request_data = req.body;
+  try {
+    let data = await sqlite.deleteProject(request_data);
+    res.setHeader('Content-Type', 'application/json')
+    res.status(200).json(data)
+  } catch (error:any) {
+    error.time = Date.now()
+    console.log(error)
+  }
 })
 
 app.get('/projectFullText/:query', async (req, res) => {
   let request_data = req.params;
-  prisma.project.findMany({
-    where: {
-      OR: [
-        {
-          id: returnNumIfNum(request_data.query)
-        },
-        {
-          name: {
-            contains: request_data.query
-          }
-        },
-        {
-          description: {
-            contains: request_data.query
-          }
-        },
-        {
-          genres: {
-            contains: request_data.query
-          }
-        }
-      ]
-    }
-  })
-  .then((data) => {
-    res.status(200).json(data);    
-  })
-  .catch((err) => {
-    if (err) {
-      res.sendStatus(500);
-      console.log(new Error(err).message)
-    }
-  })
+  try {
+    let data = await sqlite.projectFullText(request_data.query);
+    res.setHeader('Content-Type', 'application/json')
+    res.status(200).json(data)
+  } catch (error:any) {
+    error.time = Date.now()
+    console.log(error)
+  }
 })
 
 
