@@ -29,6 +29,7 @@ model Track {
   explicit Boolean @default(false)
   length Int @default(0) //in Seconds
   genre String @default("default")
+  secGenre String @default("default")
   createdAt DateTime @default(now())
   status Int @default(1)
   releaseDate String @default("0")

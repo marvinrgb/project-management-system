@@ -1,18 +1,17 @@
-import { PrismaClient } from "@prisma/client";
 import express from 'express';
 import cors from 'cors';
-import * as sqlite from './sqliteHandler.js';
+import * as db from './dbHandler.js';
+import genres from './genres.js';
 const app = express();
 const port = 3100;
 const host = '0.0.0.0';
-const prisma = new PrismaClient();
 app.disable('x-powered-by');
 app.use(cors());
 app.use(express.json());
 app.get('/tracks', async (req, res) => {
     let data;
     try {
-        data = await sqlite.getAllFromTable('track');
+        data = await db.getAllFromTable('track');
         res.setHeader('content-Type', 'application/json');
         res.status(200).json(data);
     }
@@ -24,7 +23,7 @@ app.get('/tracks', async (req, res) => {
 app.get('/track/:id', async (req, res) => {
     let data;
     try {
-        data = await sqlite.getOneWithID('track', parseInt(req.params.id));
+        data = await db.getOneWithID('track', parseInt(req.params.id));
         res.setHeader('content-Type', 'application/json');
         res.status(200).json(data);
     }
@@ -37,7 +36,7 @@ app.post('/track', async (req, res) => {
     let request_data = req.body;
     request_data.projectId = 1;
     try {
-        let data = await sqlite.createTrack(request_data);
+        let data = await db.createTrack(request_data);
         res.setHeader('content-Type', 'application/json');
         res.status(200).json(data);
     }
@@ -49,7 +48,7 @@ app.post('/track', async (req, res) => {
 app.put('/track', async (req, res) => {
     let request_data = req.body;
     try {
-        let data = await sqlite.changeTrack(request_data);
+        let data = await db.changeTrack(request_data);
         res.setHeader('content-Type', 'application/json');
         res.status(200).json(data);
     }
@@ -61,7 +60,7 @@ app.put('/track', async (req, res) => {
 app.delete('/track', async (req, res) => {
     let request_data = req.body;
     try {
-        let data = await sqlite.deleteTrack(request_data.id);
+        let data = await db.deleteTrack(request_data.id);
         res.setHeader('content-Type', 'application/json');
         res.status(200).json(data);
     }
@@ -70,6 +69,9 @@ app.delete('/track', async (req, res) => {
         console.log(error);
     }
 });
+app.get('/genres', (req, res) => {
+    res.status(200).json(genres);
+});
 /*
 TAKES: any field that exist on model track. no specific amount of fields required
 DELIVERS: all strictly matching tracks
@@ -77,7 +79,7 @@ DELIVERS: all strictly matching tracks
 app.get('/trackQuery', async (req, res) => {
     let request_data = req.body;
     try {
-        let data = await sqlite.trackQuery(request_data);
+        let data = await db.trackQuery(request_data);
         res.setHeader('content-Type', 'application/json');
         res.status(200).json(data);
     }
@@ -97,7 +99,7 @@ function returnNumIfNum(text) {
 app.get('/tracksByProject/:id', async (req, res) => {
     let id = parseInt(req.params.id);
     try {
-        let data = await sqlite.tracksByProject(id);
+        let data = await db.tracksByProject(id);
         res.setHeader('content-Type', 'application/json');
         res.status(200).json(data);
     }
@@ -109,7 +111,7 @@ app.get('/tracksByProject/:id', async (req, res) => {
 app.get('/trackFullText/:query', async (req, res) => {
     let request_data = req.params;
     try {
-        let data = await sqlite.trackFullText(request_data.query);
+        let data = await db.trackFullText(request_data.query);
         res.setHeader('content-Type', 'application/json');
         res.status(200).json(data);
     }
@@ -121,7 +123,7 @@ app.get('/trackFullText/:query', async (req, res) => {
 app.get('/projects', async (req, res) => {
     let data;
     try {
-        data = await sqlite.getAllFromTable('project');
+        data = await db.getAllFromTable('project');
         res.setHeader('content-Type', 'application/json');
         res.status(200).json(data);
     }
@@ -133,7 +135,7 @@ app.get('/projects', async (req, res) => {
 app.get('/project/:id', async (req, res) => {
     let data;
     try {
-        data = await sqlite.getOneWithID('project', parseInt(req.params.id));
+        data = await db.getOneWithID('project', parseInt(req.params.id));
         res.setHeader('content-Type', 'application/json');
         res.status(200).json(data);
     }
@@ -145,7 +147,7 @@ app.get('/project/:id', async (req, res) => {
 app.post('/project', async (req, res) => {
     let request_data = req.body;
     try {
-        let data = await sqlite.createProject(request_data);
+        let data = await db.createProject(request_data);
         res.setHeader('Content-Type', 'application/json');
         res.status(200).json(data);
     }
@@ -157,7 +159,7 @@ app.post('/project', async (req, res) => {
 app.put('/project', async (req, res) => {
     let request_data = req.body;
     try {
-        let data = await sqlite.changeProject(request_data);
+        let data = await db.changeProject(request_data);
         res.setHeader('Content-Type', 'application/json');
         res.status(200).json(data);
     }
@@ -169,7 +171,7 @@ app.put('/project', async (req, res) => {
 app.delete('/project', async (req, res) => {
     let request_data = req.body;
     try {
-        let data = await sqlite.deleteProject(request_data);
+        let data = await db.deleteProject(request_data.id);
         res.setHeader('Content-Type', 'application/json');
         res.status(200).json(data);
     }
@@ -181,7 +183,7 @@ app.delete('/project', async (req, res) => {
 app.get('/projectFullText/:query', async (req, res) => {
     let request_data = req.params;
     try {
-        let data = await sqlite.projectFullText(request_data.query);
+        let data = await db.projectFullText(request_data.query);
         res.setHeader('Content-Type', 'application/json');
         res.status(200).json(data);
     }
