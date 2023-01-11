@@ -18,6 +18,7 @@ model Project {
   length Int @default(0) //in Seconds (calculates from all Tracks)
   releaseDate String @default("0")
   createdAt DateTime @default(now())
+  user String @default("adminmarv")
   track Track[]
 }
 
@@ -33,6 +34,7 @@ model Track {
   createdAt DateTime @default(now())
   status Int @default(1)
   releaseDate String @default("0")
+  user String @default("adminmarv")
   projectId Int
   project Project @relation(fields: [projectId], references: [id])
 }

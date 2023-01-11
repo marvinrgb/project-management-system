@@ -13,14 +13,21 @@ let functions = {
 };
 // export default functions;
 //returns an Array
-export async function getAllFromTable(tablename) {
-    console.log(tablename);
+export async function getAllFromTable(tablename, user) {
     if (tablename === 'track') {
-        let data = await prisma.track.findMany();
+        let data = await prisma.track.findMany({
+            where: {
+                user: user
+            }
+        });
         return data;
     }
     else if (tablename === 'project') {
-        let data = await prisma.project.findMany();
+        let data = await prisma.project.findMany({
+            where: {
+                user: user
+            }
+        });
         return data;
     }
 }

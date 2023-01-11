@@ -1,3 +1,0 @@
-dbname: projectms
-
-tables: project, track
